@@ -1,6 +1,19 @@
 # nostr report auditor
 
-Aggregate reports by npub for a quick review.
+```json
+{"kind":1984}
+```
+
+I wanted a quick and dirty way to aggregate reports by npub for a quick review. Even if an npub is blocked by our strfry-policies already, we can still get reports about those npubs. So this checks to see if the reported npub has events on the relay. If not, we can ignore reports about it.
+
+It runs in your console and creates output like this:
+
+```
+1: This is entirely hypothetical, but if somebody man
+1: So basic introduction for anyone interested: I am 
+Pubkey 703533c2c16ac7771efb1bdf60a85df74e42f8409a007900f402ba4684f99184 had 13 reports: "spam", "spam", "illegal", "spam", "illegal", "illegal", "spam", "spam", "illegal", "illegal", "illegal", "doxxing users i.p. addresses", "illegal", "doxxing users i.p. addresses", "doxxing users i.p. addresses", "spam", "illegal", 
+Please [Enter] to continue..  
+```
 
 ## Running
 
