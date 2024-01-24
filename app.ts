@@ -1,4 +1,4 @@
-import NDK, { NDKEvent, NDKUser, NDKFilter } from 'npm:@nostr-dev-kit/ndk';
+import NDK, { NDKEvent, NDKFilter } from 'npm:@nostr-dev-kit/ndk';
 
 const ndk = new NDK({
     explicitRelayUrls: [
@@ -40,16 +40,40 @@ for (const report of reports) {
 
 // Start with npubs with the most reports
 const sortedPTags = Array.from(pTagCounts).sort((a, b) => b[1] - a[1]);
-sortedPTags.forEach(([publicKey, count]) => {
-    if(count>1) {
+
+// by pubkeys (p tags)
+//sortedPTags.forEach(async ([reportedPubkey, count]) => {
+for (const [reportedPubkey, count] of sortedPTags) {
+    if (count > 2) {
+        let reasons = "";
         for (const report of reports) {
             // Check if this report contains the target pTag
-            const containsTargetPTag = report.tags.some(tag => tag[0] === "p" && tag[1] === targetPTag);
+            const containsTargetPTag = report.tags.some(tag => tag[0] === "p" && tag[1] === reportedPubkey);
 
-            // If it does, log the content of the report
             if (containsTargetPTag) {
-                console.log(report.content);
+                // Loop through the tags from the report
+                report.tags.forEach(tag => {
+                    // Append reason if it exists
+                    if (tag.length > 2 && (tag[0] === "e" || tag[0] === "p")) {
+                        const reason = tag[2];
+                        reasons += `"${reason}", `;
+                    }
+                    // Append content if it exists and is not empty
+                    if (report.content && report.content !== "") {
+                        reasons += `"${report.content}", `;
+                    }
+                });
             }
         }
+        const authorFilter: NDKFilter = { 'authors': [reportedPubkey], limit: 20 }
+        const recentEvents: Set<NDKEvent> = await ndk.fetchEvents(authorFilter);
+        for (const event of recentEvents) {
+            console.log(`${event.kind}: ${event?.content.substring(0, 50)}`);
+        }
+        if (recentEvents.size > 0) {
+            console.log(`Pubkey ${reportedPubkey} had ${count} reports: ${reasons}`)
+        }
+        const userInput = prompt("Please [Enter] to continue.. ");
+        console.log(userInput);
     }
-});
+};
